@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Calendar, MapPin, Clock, Users, Ticket, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, MapPin, Clock, Users, Ticket, Filter, Music, Trophy, Palette } from 'lucide-react';
 
 const EventsSection = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedMonth, setSelectedMonth] = useState('all');
+  const [visibleEvents, setVisibleEvents] = useState<number[]>([]);
 
   const events = [
     {
@@ -93,11 +94,11 @@ const EventsSection = () => {
   ];
 
   const categories = [
-    { id: 'all', name: 'All Events', color: 'bg-gray-500' },
-    { id: 'cultural', name: 'Cultural', color: 'bg-red-500' },
-    { id: 'concert', name: 'Concerts', color: 'bg-purple-500' },
-    { id: 'sport', name: 'Sports', color: 'bg-green-500' },
-    { id: 'festival', name: 'Festivals', color: 'bg-yellow-500' }
+    { id: 'all', name: 'All Events', color: 'bg-gray-500', icon: '🌍' },
+    { id: 'cultural', name: 'Cultural', color: 'bg-cameroon-red-500', icon: '🎭' },
+    { id: 'concert', name: 'Concerts', color: 'bg-cameroon-yellow-500', icon: '🎵' },
+    { id: 'sport', name: 'Sports', color: 'bg-cameroon-green-500', icon: '🏃' },
+    { id: 'festival', name: 'Festivals', color: 'bg-cameroon-blue-500', icon: '🎪' }
   ];
 
   const months = [
@@ -119,34 +120,62 @@ const EventsSection = () => {
   const featuredEvents = filteredEvents.filter(event => event.featured);
   const regularEvents = filteredEvents.filter(event => !event.featured);
 
+  // Animate events on scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = parseInt(entry.target.getAttribute('data-id') || '0');
+            setVisibleEvents(prev => [...prev, id]);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const eventCards = document.querySelectorAll('.event-card');
+    eventCards.forEach(card => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, [selectedCategory, selectedMonth]);
+
   return (
-    <section id="events" className="py-20 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-indigo-900 dark:to-purple-900">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="events" className="section-padding bg-gradient-to-br from-cameroon-blue-50 via-white to-cameroon-green-50 dark:from-gray-900 dark:via-cameroon-blue-950 dark:to-cameroon-green-950">
+      <div className="container mx-auto container-padding">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+        <div className="text-center mb-16 animate-on-scroll">
+          <div className="inline-flex items-center space-x-2 px-4 py-2 mb-6 glass-card rounded-full">
+            <Music className="w-5 h-5 text-cameroon-yellow-500" />
+            <span className="text-sm font-medium">Cultural Celebrations</span>
+          </div>
+          <h2 className="text-4xl md:text-6xl font-bold gradient-text mb-6">
             Upcoming Events
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            Join vibrant cultural celebrations, concerts, and festivals that showcase the best of Cameroon
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto leading-relaxed">
+            Immerse yourself in vibrant cultural celebrations, world-class concerts, and unforgettable festivals that showcase the rich diversity of Cameroon
           </p>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        <div className="flex flex-wrap justify-center gap-6 mb-16 animate-on-scroll">
           {/* Category Filter */}
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-3">
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                className={`group relative px-6 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 ${
                   selectedCategory === category.id
-                    ? `${category.color} text-white shadow-lg`
-                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:shadow-md'
+                    ? `${category.color} text-white shadow-2xl`
+                    : 'bg-white/80 dark:bg-gray-800/80 text-gray-700 dark:text-gray-300 hover:shadow-lg backdrop-blur-sm'
                 }`}
               >
+                <span className="mr-2 text-lg">{category.icon}</span>
                 {category.name}
+                {selectedCategory === category.id && (
+                  <div className="absolute inset-0 rounded-2xl bg-white/20 animate-pulse"></div>
+                )}
               </button>
             ))}
           </div>
@@ -156,9 +185,7 @@ const EventsSection = () => {
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="px-4 py-2 pr-8 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
-                       rounded-full text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 
-                       focus:border-transparent appearance-none"
+              className="px-6 py-4 pr-10 glass-card rounded-2xl text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-cameroon-blue-500 focus:border-transparent appearance-none font-medium"
             >
               {months.map((month) => (
                 <option key={month.id} value={month.id}>
@@ -166,16 +193,19 @@ const EventsSection = () => {
                 </option>
               ))}
             </select>
-            <Filter className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Filter className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cameroon-blue-500 pointer-events-none" />
           </div>
         </div>
 
         {/* Featured Events */}
         {featuredEvents.length > 0 && (
-          <div className="mb-16">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 text-center">
-              Featured Events
-            </h3>
+          <div className="mb-20">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl font-bold gradient-text mb-4">
+                Featured Events
+              </h3>
+              <div className="w-24 h-1 bg-cameroon-gradient mx-auto rounded-full"></div>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {featuredEvents.map((event) => (
                 <div
@@ -334,16 +364,33 @@ const EventsSection = () => {
         </div>
 
         {filteredEvents.length === 0 && (
-          <div className="text-center py-16">
-            <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">
+          <div className="text-center py-20">
+            <div className="w-20 h-20 bg-cameroon-gradient rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
+              <Calendar className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold gradient-text mb-4">
               No events found
             </h3>
-            <p className="text-gray-500 dark:text-gray-500">
-              Try adjusting your filters to see more events
+            <p className="text-gray-600 dark:text-gray-400 text-lg">
+              Try adjusting your filters to discover amazing events across Cameroon
             </p>
           </div>
         )}
+        {/* Call to Action */}
+        <div className="text-center mt-16 animate-on-scroll">
+          <div className="glass-card p-8 rounded-3xl max-w-3xl mx-auto">
+            <h3 className="text-2xl font-bold gradient-text mb-4">
+              Experience Cameroon's Rich Cultural Heritage
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              From traditional festivals to modern concerts, immerse yourself in the vibrant events that make Cameroon truly special
+            </p>
+            <button className="futuristic-button">
+              <span className="mr-2">🎭</span>
+              Explore All Events
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );

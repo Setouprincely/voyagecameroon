@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import DestinationGrid from './components/DestinationGrid';
-import CulturalExperiences from './components/CulturalExperiences';
-import BookingSection from './components/BookingSection';
-import EventsSection from './components/EventsSection';
+import { Toaster } from 'react-hot-toast';
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import DestinationsPage from './pages/DestinationsPage';
+import DestinationDetail from './pages/DestinationDetail';
+import EventsPage from './pages/EventsPage';
+import EventDetail from './pages/EventDetail';
+import CulturalDetail from './pages/CulturalDetail';
 import AdminDashboard from './components/AdminDashboard';
-import Footer from './components/Footer';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import ForgotPassword from './components/auth/ForgotPassword';
+import UserDashboard from './pages/user/Dashboard';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { AuthProvider } from './context/AuthContext';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -25,7 +31,7 @@ function App() {
       <div className="min-h-screen bg-gradient-to-br from-green-900 via-blue-900 to-red-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-400 mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-white mb-2">Voyage Tour</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Voyage Cameroon</h2>
           <p className="text-gray-300">Discovering Cameroon's Beauty...</p>
         </div>
       </div>
@@ -35,24 +41,31 @@ function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-            <Header />
+        <AuthProvider>
+          <Router>
             <Routes>
-              <Route path="/" element={
-                <main>
-                  <Hero />
-                  <DestinationGrid />
-                  <CulturalExperiences />
-                  <BookingSection />
-                  <EventsSection />
-                </main>
-              } />
-              <Route path="/admin" element={<AdminDashboard />} />
+              {/* Auth Routes */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              
+              {/* User Dashboard */}
+              <Route path="/dashboard" element={<UserDashboard />} />
+              
+              {/* Main Routes with Layout */}
+              <Route element={<Layout />}>
+                <Route path="/" element={<Home />} />
+                <Route path="/destinations" element={<DestinationsPage />} />
+                <Route path="/destinations/:id" element={<DestinationDetail />} />
+                <Route path="/events" element={<EventsPage />} />
+                <Route path="/events/:id" element={<EventDetail />} />
+                <Route path="/cultural/:type/:id" element={<CulturalDetail />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+              </Route>
             </Routes>
-            <Footer />
-          </div>
-        </Router>
+            <Toaster position="top-center" />
+          </Router>
+        </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
